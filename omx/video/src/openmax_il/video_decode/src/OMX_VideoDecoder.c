@@ -22,22 +22,22 @@
 *             Texas Instruments OMAP (TM) Platform Software
 *  (c) Copyright Texas Instruments, Incorporated.  All Rights Reserved.
 *
-*  Use of this software is controlled by the terms and conditions found 
+*  Use of this software is controlled by the terms and conditions found
 *  in the license agreement under which this software has been supplied.
 * ============================================================================*/
-/** 
+/**
 * @file OMX_Video_Decoder.c
 *
-* This file implements OMX Component for video decoder that 
+* This file implements OMX Component for video decoder that
 * is fully compliant with the OMX specification 1.0
 *
 * @path  $(CSLPATH)\
 *
 * @rev  0.1
 */
-/* ---------------------------------------------------------------------------- 
-*! 
-*! Revision History 
+/* ----------------------------------------------------------------------------
+*!
+*! Revision History
 *! ===================================
 *! 24-July-2005 mf:  Initial Version. Change required per OMAPSWxxxxxxxxx
 *! to provide _________________.
@@ -46,7 +46,7 @@
 
 /* ------compilation control switches ----------------------------------------*/
 /*******************************************************************************
-*  INCLUDE FILES                                                  
+*  INCLUDE FILES
 *******************************************************************************/
 /* ----- system and platform files -------------------------------------------*/
 #include <wchar.h>
@@ -77,7 +77,7 @@
 #ifdef USE_ION
 #include <sys/mman.h>
 #include <sys/eventfd.h>
-#include <ion.h>
+#include <linux/ion.h>
 #endif
 
 #include "hal_public.h"
@@ -384,7 +384,7 @@ OMX_ERRORTYPE OMX_ComponentInit (OMX_HANDLETYPE hComponent)
     OMX_MALLOC_STRUCT(pComponentPrivate->pWMV, OMX_VIDEO_PARAM_WMVTYPE,pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]);
     OMX_MALLOC_STRUCT(pComponentPrivate->pDeblockingParamType, OMX_PARAM_DEBLOCKINGTYPE, pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]);
     OMX_MALLOC_STRUCT(pComponentPrivate->pDeringingParamType, OMX_CONFIG_IMAGEFILTERTYPE, pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]);
-    OMX_MALLOC_STRUCT(pComponentPrivate->pPVCapabilityFlags, PV_OMXComponentCapabilityFlagsType, pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]); 
+    OMX_MALLOC_STRUCT(pComponentPrivate->pPVCapabilityFlags, PV_OMXComponentCapabilityFlagsType, pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]);
 
     OMX_MALLOC_STRUCT_SIZED(pComponentPrivate->cComponentName, char, VIDDEC_MAX_NAMESIZE + 1,pComponentPrivate->nMemUsage[VIDDDEC_Enum_MemLevel0]);
     if (pComponentPrivate->cComponentName == NULL) {
@@ -551,7 +551,7 @@ EXIT:
 /**
   *  VIDDEC_SetCallbacks() Sets application callbacks to the component
   *
-  * This method will update application callbacks 
+  * This method will update application callbacks
   * the application.
   *
   * @param pComp         handle for this instance of the component
@@ -563,8 +563,8 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_SetCallbacks (OMX_HANDLETYPE pComponent, 
-                                          OMX_CALLBACKTYPE* pCallBacks, 
+static OMX_ERRORTYPE VIDDEC_SetCallbacks (OMX_HANDLETYPE pComponent,
+                                          OMX_CALLBACKTYPE* pCallBacks,
                                           OMX_PTR pAppData)
 {
     OMX_ERRORTYPE eError = OMX_ErrorNone;
@@ -1106,7 +1106,7 @@ static OMX_ERRORTYPE VIDDEC_GetParameter (OMX_IN OMX_HANDLETYPE hComponent,
                             break;
                     }
                     if(eError == OMX_ErrorNone) {
-                        memcpy(ComponentParameterStructure, pComponentPrivate->pInPortFormat, 
+                        memcpy(ComponentParameterStructure, pComponentPrivate->pInPortFormat,
                                 sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE));
                     }
                 }
@@ -1127,7 +1127,7 @@ static OMX_ERRORTYPE VIDDEC_GetParameter (OMX_IN OMX_HANDLETYPE hComponent,
                             break;
                     }
                     if(eError == OMX_ErrorNone) {
-                        memcpy(ComponentParameterStructure, pComponentPrivate->pOutPortFormat, 
+                        memcpy(ComponentParameterStructure, pComponentPrivate->pOutPortFormat,
                             sizeof(OMX_VIDEO_PARAM_PORTFORMATTYPE));
                     }
                 }
@@ -1252,7 +1252,7 @@ static OMX_ERRORTYPE VIDDEC_GetParameter (OMX_IN OMX_HANDLETYPE hComponent,
 #ifdef ANDROID
         /* Opencore specific */
         case (OMX_INDEXTYPE) PV_OMX_COMPONENT_CAPABILITY_TYPE_INDEX: /** Obtain the capabilities of the OMX component **/
-                memcpy(ComponentParameterStructure, pComponentPrivate->pPVCapabilityFlags, 
+                memcpy(ComponentParameterStructure, pComponentPrivate->pPVCapabilityFlags,
                         sizeof(PV_OMXComponentCapabilityFlagsType));
                 eError = OMX_ErrorNone;
             break;
@@ -1355,7 +1355,7 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp, 
+static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
                                           OMX_INDEXTYPE nParamIndex,
                                           OMX_PTR pCompParam)
 {
@@ -1602,7 +1602,7 @@ static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
                 OMX_VIDEO_PARAM_WMVTYPE* pComponentParam = (OMX_VIDEO_PARAM_WMVTYPE*)pCompParam;
                 if (pComponentParam->nPortIndex == pComponentPrivate->pWMV->nPortIndex) {
                     memcpy(pComponentPrivate->pWMV, pCompParam, sizeof(OMX_VIDEO_PARAM_WMVTYPE));
-                } 
+                }
                 else {
                     eError = OMX_ErrorBadPortIndex;
                 }
@@ -1613,7 +1613,7 @@ static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
                 OMX_VIDEO_PARAM_MPEG4TYPE* pComponentParam = (OMX_VIDEO_PARAM_MPEG4TYPE*)pCompParam;
                 if (pComponentParam->nPortIndex == pComponentPrivate->pMpeg4->nPortIndex) {
                     memcpy(pComponentPrivate->pMpeg4, pCompParam, sizeof(OMX_VIDEO_PARAM_MPEG4TYPE));
-                } 
+                }
                 else {
                     eError = OMX_ErrorBadPortIndex;
                 }
@@ -1624,7 +1624,7 @@ static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
                 OMX_VIDEO_PARAM_MPEG2TYPE* pComponentParam = (OMX_VIDEO_PARAM_MPEG2TYPE*)pCompParam;
                 if (pComponentParam->nPortIndex == pComponentPrivate->pMpeg2->nPortIndex) {
                     memcpy(pComponentPrivate->pMpeg2, pCompParam, sizeof(OMX_VIDEO_PARAM_MPEG2TYPE));
-                } 
+                }
                 else {
                     eError = OMX_ErrorBadPortIndex;
                 }
@@ -1661,10 +1661,10 @@ static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
 
                 if (pBuffSupplierParam->nPortIndex == 1) {
                     pComponentPrivate->pCompPort[pBuffSupplierParam->nPortIndex]->eSupplierSetting = pBuffSupplierParam->eBufferSupplier;
-                } 
+                }
                 else if (pBuffSupplierParam->nPortIndex == 0) {
                     pComponentPrivate->pCompPort[pBuffSupplierParam->nPortIndex]->eSupplierSetting = pBuffSupplierParam->eBufferSupplier;
-                } 
+                }
                 else {
                     eError = OMX_ErrorBadPortIndex;
                     break;
@@ -1729,7 +1729,7 @@ static OMX_ERRORTYPE VIDDEC_SetParameter (OMX_HANDLETYPE hComp,
                 }
 #endif
                 memcpy( (void *)&pComponentPrivate->componentRole, (void *)pRole, sizeof(OMX_PARAM_COMPONENTROLETYPE));
-            } 
+            }
             else {
                 eError = OMX_ErrorBadParameter;
             }
@@ -1923,7 +1923,7 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp, 
+static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp,
                                        OMX_INDEXTYPE nConfigIndex,
                                        OMX_PTR ComponentConfigStructure)
 {
@@ -1946,16 +1946,16 @@ static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp,
             case OMX_IndexParamPortDefinition:
                 {
                     OMX_PARAM_PORTDEFINITIONTYPE *pPortDefParam = (OMX_PARAM_PORTDEFINITIONTYPE *)ComponentConfigStructure;
-                    if (((OMX_PARAM_PORTDEFINITIONTYPE*)(ComponentConfigStructure))->nPortIndex == 
+                    if (((OMX_PARAM_PORTDEFINITIONTYPE*)(ComponentConfigStructure))->nPortIndex ==
                             pComponentPrivate->pInPortDef->nPortIndex) {
                         OMX_PARAM_PORTDEFINITIONTYPE *pPortDef = pComponentPrivate->pInPortDef;
                         memcpy(pPortDefParam, pPortDef, sizeof(OMX_PARAM_PORTDEFINITIONTYPE));
-                    } 
-                    else if (((OMX_PARAM_PORTDEFINITIONTYPE*)(ComponentConfigStructure))->nPortIndex == 
+                    }
+                    else if (((OMX_PARAM_PORTDEFINITIONTYPE*)(ComponentConfigStructure))->nPortIndex ==
                             pComponentPrivate->pOutPortDef->nPortIndex) {
                         OMX_PARAM_PORTDEFINITIONTYPE *pPortDef = pComponentPrivate->pOutPortDef;
                         memcpy(pPortDefParam, pPortDef, sizeof(OMX_PARAM_PORTDEFINITIONTYPE));
-                    } 
+                    }
                     else {
                         eError = OMX_ErrorBadPortIndex;
                     }
@@ -2014,7 +2014,7 @@ static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp,
             case OMX_IndexConfigCommonOutputCrop:
             {
  		OMX_CONFIG_RECTTYPE *crop2 = (OMX_CONFIG_RECTTYPE*)ComponentConfigStructure;
-                if (((OMX_CONFIG_RECTTYPE*)(ComponentConfigStructure))->nPortIndex == 
+                if (((OMX_CONFIG_RECTTYPE*)(ComponentConfigStructure))->nPortIndex ==
                             pComponentPrivate->pOutPortDef->nPortIndex) {
      		        crop2->nLeft   =  0;
             		crop2->nWidth  =  pComponentPrivate->pInPortDef->format.video.nFrameWidth - pComponentPrivate->nCropWidth;
@@ -2023,8 +2023,8 @@ static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp,
             }
                	break;
 	    }
-           
-           
+
+
 #endif
             /* Vendor specific structures should be in the range of 0xFF000000
                to 0xFFFFFFFF.  This range is not broken out by vendor, so
@@ -2035,7 +2035,7 @@ static OMX_ERRORTYPE VIDDEC_GetConfig (OMX_HANDLETYPE hComp,
                 eError = OMX_ErrorUnsupportedIndex;
             break;
         }
-    }    
+    }
 EXIT:
     return eError;
 }
@@ -2055,7 +2055,7 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_SetConfig (OMX_HANDLETYPE hComp, 
+static OMX_ERRORTYPE VIDDEC_SetConfig (OMX_HANDLETYPE hComp,
                                        OMX_INDEXTYPE nConfigIndex,
                                        OMX_PTR ComponentConfigStructure)
 {
@@ -2161,7 +2161,7 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_GetState (OMX_HANDLETYPE hComponent, 
+static OMX_ERRORTYPE VIDDEC_GetState (OMX_HANDLETYPE hComponent,
                                       OMX_STATETYPE* pState)
 {
     OMX_ERRORTYPE eError                        = OMX_ErrorNone;
@@ -2245,7 +2245,7 @@ EXIT:
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_EmptyThisBuffer (OMX_HANDLETYPE pComponent, 
+static OMX_ERRORTYPE VIDDEC_EmptyThisBuffer (OMX_HANDLETYPE pComponent,
                                              OMX_BUFFERHEADERTYPE* pBuffHead)
 {
     OMX_ERRORTYPE eError = OMX_ErrorNone;
@@ -2292,7 +2292,7 @@ static OMX_ERRORTYPE VIDDEC_EmptyThisBuffer (OMX_HANDLETYPE pComponent,
     OMX_CONF_CHK_VERSION(pBuffHead, OMX_BUFFERHEADERTYPE, eError, pComponentPrivate->dbg);
 
     if ((pComponentPrivate->bParserEnabled == OMX_FALSE) &&
-        (pComponentPrivate->bFirstHeader == OMX_FALSE) && 
+        (pComponentPrivate->bFirstHeader == OMX_FALSE) &&
         (pBuffHead->nFilledLen > pBuffHead->nAllocLen)) {
         pBuffHead->nFilledLen = pBuffHead->nAllocLen;
     }
@@ -2387,15 +2387,15 @@ static OMX_ERRORTYPE VIDDEC_FillThisBuffer (OMX_HANDLETYPE pComponent,
 
     OMX_CONF_CHK_VERSION(pBuffHead, OMX_BUFFERHEADERTYPE, eError, pComponentPrivate->dbg);
 
-    if ((pComponentPrivate->bParserEnabled == OMX_FALSE) && 
-        (pComponentPrivate->bFirstHeader == OMX_FALSE) && 
+    if ((pComponentPrivate->bParserEnabled == OMX_FALSE) &&
+        (pComponentPrivate->bFirstHeader == OMX_FALSE) &&
         (pBuffHead->nFilledLen > pBuffHead->nAllocLen)) {
         OMX_PRINT1(pComponentPrivate->dbg, "bFirstHeader: nFilledLen= %lu <- nAllocLen= %lu\n", pBuffHead->nFilledLen, pBuffHead->nAllocLen);
 
         pBuffHead->nFilledLen = pBuffHead->nAllocLen;
     }
 
-  
+
 	if(pComponentPrivate->pCompPort[OMX_VIDEODECODER_OUTPUT_PORT]->VIDDECBufferType
 			== GrallocPointers)
 	{
@@ -2682,7 +2682,7 @@ static OMX_ERRORTYPE VIDDEC_ComponentDeInit(OMX_HANDLETYPE hComponent)
         pComponentPrivate->pInBufSupplier = NULL;
     }
     if(pComponentPrivate->pOutBufSupplier) {
-        free(pComponentPrivate->pOutBufSupplier);  
+        free(pComponentPrivate->pOutBufSupplier);
         pComponentPrivate->pOutBufSupplier = NULL;
     }
     if(pComponentPrivate->pMpeg4 != NULL) {
@@ -2778,14 +2778,14 @@ EXIT:
 
 /*----------------------------------------------------------------------------*/
 /**
-  *  VIDDEC_UseBuffer() 
+  *  VIDDEC_UseBuffer()
   *
-  * 
-  * 
   *
-  * @param 
-  * @param 
-  * @param 
+  *
+  *
+  * @param
+  * @param
+  * @param
   *
   * @retval OMX_NoError              Success, ready to roll
   *         OMX_Error_BadParameter   The input parameter pointer is null
@@ -2849,7 +2849,7 @@ static OMX_ERRORTYPE VIDDEC_UseBuffer(OMX_IN OMX_HANDLETYPE hComponent,
         goto EXIT;
     }
 
-    OMX_PRBUFFER1(pComponentPrivate->dbg, "pPortDef->nBufferSize %d nSizeBytes %d %d\n", (int )pPortDef->nBufferSize, 
+    OMX_PRBUFFER1(pComponentPrivate->dbg, "pPortDef->nBufferSize %d nSizeBytes %d %d\n", (int )pPortDef->nBufferSize,
         (int )nSizeBytes,(int )(pPortDef->nBufferSize > nSizeBytes));
 
     if(nSizeBytes < pPortDef->nBufferSize || pPortDef->bPopulated){
@@ -2880,7 +2880,7 @@ static OMX_ERRORTYPE VIDDEC_UseBuffer(OMX_IN OMX_HANDLETYPE hComponent,
     (*ppBufferHdr)->pMarkData = NULL;
 #ifndef VIDDEC_WMVPOINTERFIXED
     if (pComponentPrivate->nWMVFileType == VIDDEC_WMV_ELEMSTREAM &&
-        pComponentPrivate->pInPortDef->format.video.eCompressionFormat == OMX_VIDEO_CodingWMV && 
+        pComponentPrivate->pInPortDef->format.video.eCompressionFormat == OMX_VIDEO_CodingWMV &&
         pComponentPrivate->ProcessMode == 0 &&
         nPortIndex == VIDDEC_INPUT_PORT) {
         /* vc-1 fix */
@@ -2894,11 +2894,6 @@ static OMX_ERRORTYPE VIDDEC_UseBuffer(OMX_IN OMX_HANDLETYPE hComponent,
 
 		if(pComponentPrivate->pCompPort[1]->VIDDECBufferType == GrallocPointers) {
 			data.gralloc_handle = ((IMG_native_handle_t*)(*ppBufferHdr)->pBuffer)->fd[0];
-
-                   
-        if (ion_ioctl(pComponentPrivate->ion_fd, ION_IOC_MAP_GRALLOC, &data)) {
-				ALOGV("ion_ioctl fail");
-			}
 
 		if (ion_map(pComponentPrivate->ion_fd, data.handleY, (*ppBufferHdr)->nAllocLen, PROT_READ | PROT_WRITE,
 								MAP_SHARED, 0, &buff_t, &pComponentPrivate->mmap_fd[pBufferCnt]) < 0) {
@@ -2977,19 +2972,19 @@ EXIT:
     if (pComponentPrivate)
         OMX_PRBUFFER1(pComponentPrivate->dbg, "---Exiting eError 0x%x\n", \
                                                          eError);
-    return eError;  
+    return eError;
 }
 
 /*----------------------------------------------------------------------------*/
 /**
-  *  VIDDEC_FreeBuffer() 
+  *  VIDDEC_FreeBuffer()
   *
-  * 
-  * 
   *
-  * @param 
-  * @param 
-  * @param 
+  *
+  *
+  * @param
+  * @param
+  * @param
   *
   * @retval OMX_NoError              Success, ready to roll
   *         OMX_Error_BadParameter   The input parameter pointer is null
@@ -3082,7 +3077,7 @@ static OMX_ERRORTYPE VIDDEC_FreeBuffer (OMX_IN OMX_HANDLETYPE hComponent,
         if (nPortIndex == pComponentPrivate->pInPortFormat->nPortIndex) {
             OMX_MEMFREE_STRUCT_DSPALIGN(pBufferPrivate->pUalgParam,OMX_PTR);
             pBufferPrivate->nUalgParamSize = 0;
-        } 
+        }
         else if (nPortIndex == pComponentPrivate->pOutPortFormat->nPortIndex) {
             OMX_MEMFREE_STRUCT_DSPALIGN(pBufferPrivate->pUalgParam,OMX_PTR);
             pBufferPrivate->nUalgParamSize = 0;
@@ -3096,7 +3091,7 @@ static OMX_ERRORTYPE VIDDEC_FreeBuffer (OMX_IN OMX_HANDLETYPE hComponent,
         if (nPortIndex == pComponentPrivate->pInPortFormat->nPortIndex) {
             OMX_MEMFREE_STRUCT_DSPALIGN(pBufferPrivate->pUalgParam,OMX_PTR);
             pBufferPrivate->nUalgParamSize = 0;
-        } 
+        }
         else if (nPortIndex == pComponentPrivate->pOutPortFormat->nPortIndex) {
             OMX_MEMFREE_STRUCT_DSPALIGN(pBufferPrivate->pUalgParam,OMX_PTR);
             pBufferPrivate->nUalgParamSize = 0;
@@ -3256,14 +3251,14 @@ EXIT:
 
 /*----------------------------------------------------------------------------*/
 /**
-  *  VIDDEC_AllocateBuffer() 
+  *  VIDDEC_AllocateBuffer()
   *
-  * 
-  * 
   *
-  * @param 
-  * @param 
-  * @param 
+  *
+  *
+  * @param
+  * @param
+  * @param
   *
   * @retval OMX_NoError              Success, ready to roll
   *         OMX_Error_BadParameter   The input parameter pointer is null
@@ -3408,7 +3403,7 @@ static OMX_ERRORTYPE VIDDEC_AllocateBuffer (OMX_IN OMX_HANDLETYPE hComponent,
 
     pPortDef->nBufferSize = nSizeBytes;
     OMX_PRBUFFER1(pComponentPrivate->dbg, "pBuffHead 0x%p nAllocLen 0x%lx pBuffer %p eBufferOwner %d\n",
-        *pBuffHead, (*pBuffHead)->nAllocLen, pCompPort->pBufferPrivate[pBufferCnt]->pBufferHdr->pBuffer, 
+        *pBuffHead, (*pBuffHead)->nAllocLen, pCompPort->pBufferPrivate[pBufferCnt]->pBufferHdr->pBuffer,
         pCompPort->pBufferPrivate[pBufferCnt]->eBufferOwner);
 
     eError = VIDDEC_Allocate_DSPResources(pComponentPrivate, nPortIndex);
@@ -3428,7 +3423,7 @@ static OMX_ERRORTYPE VIDDEC_AllocateBuffer (OMX_IN OMX_HANDLETYPE hComponent,
     pCompPort->pBufferPrivate[pBufferCnt]->nNumber = pCompPort->nBufferCnt;
 
     OMX_PRBUFFER1(pComponentPrivate->dbg, "eBufferOwner 0x%x nBufferCountActual %lu nBufferCnt %u nnumber %lu\n",
-        pCompPort->pBufferPrivate[pBufferCnt]->eBufferOwner, pPortDef->nBufferCountActual, 
+        pCompPort->pBufferPrivate[pBufferCnt]->eBufferOwner, pPortDef->nBufferCountActual,
         pCompPort->nBufferCnt,pCompPort->pBufferPrivate[pBufferCnt]->nNumber);
     if (pCompPort->nBufferCnt == pPortDef->nBufferCountActual) {
         pPortDef->bPopulated = OMX_TRUE;
@@ -3455,9 +3450,9 @@ EXIT:
   * Check if the component is TI component.
   *
   * @param hTunneledComp Component Tunnel Pipe
-  *  
+  *
   * @retval OMX_TRUE   Input is a TI component.
-  *         OMX_FALSE  Input is a not a TI component. 
+  *         OMX_FALSE  Input is a not a TI component.
   *
   **/
 /*-------------------------------------------------------------------*/
@@ -3519,21 +3514,21 @@ EXIT:
 
 /*----------------------------------------------------------------------------*/
 /**
-  *  VIDDEC_VerifyTunnelConnection() 
+  *  VIDDEC_VerifyTunnelConnection()
   *
-  * 
-  * 
   *
-  * @param         
-  * @param    
-  * @param 
+  *
+  *
+  * @param
+  * @param
+  * @param
   *
   * @retval OMX_NoError              Success, ready to roll
   *         OMX_Error_BadParameter   The input parameter pointer is null
   **/
 /*----------------------------------------------------------------------------*/
 
-static OMX_ERRORTYPE VIDDEC_VerifyTunnelConnection (VIDDEC_PORT_TYPE *pPort, 
+static OMX_ERRORTYPE VIDDEC_VerifyTunnelConnection (VIDDEC_PORT_TYPE *pPort,
                                              OMX_HANDLETYPE hTunneledComp,
                                              OMX_PARAM_PORTDEFINITIONTYPE* pPortDef)
 {
@@ -3581,7 +3576,7 @@ static OMX_ERRORTYPE VIDDEC_VerifyTunnelConnection (VIDDEC_PORT_TYPE *pPort,
                 return OMX_ErrorPortsNotCompatible;
             }
             break;
-        default: 
+        default:
             pPort->hTunnelComponent = 0;
             pPort->nTunnelPort      = 0;
             return OMX_ErrorPortsNotCompatible;     /* Our current port is not set up correctly */
@@ -3697,14 +3692,14 @@ EXIT:
 
 /*----------------------------------------------------------------------------*/
 /**
-  *  VIDDEC_Allocate_DSPResources() 
+  *  VIDDEC_Allocate_DSPResources()
   *
-  * 
-  * 
   *
-  * @param 
-  * @param 
-  * @param 
+  *
+  *
+  * @param
+  * @param
+  * @param
   *
   * @retval OMX_NoError              Success, ready to roll
   *         OMX_Error_BadParameter   The input parameter pointer is null
@@ -3825,7 +3820,7 @@ static OMX_ERRORTYPE VIDDEC_Allocate_DSPResources(VIDDEC_COMPONENT_PRIVATE *pCom
                 eError = OMX_ErrorInsufficientResources;
                 goto EXIT;
             }
-            pBufferPrivate->pUalgParam = (MP2VDEC_UALGOutputParam*)(pUalgOutParams[0]); 
+            pBufferPrivate->pUalgParam = (MP2VDEC_UALGOutputParam*)(pUalgOutParams[0]);
             pBufferPrivate->nUalgParamSize = sizeof(MP2VDEC_UALGOutputParam);
         }
         else if (pPortDefIn->format.video.eCompressionFormat == OMX_VIDEO_CodingAVC) {
@@ -3836,7 +3831,7 @@ static OMX_ERRORTYPE VIDDEC_Allocate_DSPResources(VIDDEC_COMPONENT_PRIVATE *pCom
                 eError = OMX_ErrorInsufficientResources;
                 goto EXIT;
             }
-            pBufferPrivate->pUalgParam = (H264VDEC_UALGOutputParam*)(pUalgOutParams[0]); 
+            pBufferPrivate->pUalgParam = (H264VDEC_UALGOutputParam*)(pUalgOutParams[0]);
             pBufferPrivate->nUalgParamSize = sizeof(H264VDEC_UALGOutputParam);
         }
         else if (pPortDefIn->format.video.eCompressionFormat == OMX_VIDEO_CodingWMV) {
@@ -3847,7 +3842,7 @@ static OMX_ERRORTYPE VIDDEC_Allocate_DSPResources(VIDDEC_COMPONENT_PRIVATE *pCom
                 eError = OMX_ErrorInsufficientResources;
                 goto EXIT;
             }
-            pBufferPrivate->pUalgParam = (WMV9DEC_UALGOutputParam*)(pUalgOutParams[0]); 
+            pBufferPrivate->pUalgParam = (WMV9DEC_UALGOutputParam*)(pUalgOutParams[0]);
             pBufferPrivate->nUalgParamSize = sizeof(WMV9DEC_UALGOutputParam);
         }
         else {
@@ -3855,7 +3850,7 @@ static OMX_ERRORTYPE VIDDEC_Allocate_DSPResources(VIDDEC_COMPONENT_PRIVATE *pCom
             eError = OMX_ErrorUnsupportedSetting;
             goto EXIT;
         }
-    } 
+    }
     else {
         eError = OMX_ErrorBadPortIndex;
         goto EXIT;
@@ -3867,12 +3862,12 @@ EXIT:
 
 /*-------------------------------------------------------------------*/
 /**
-  * VIDDEC_GetExtensionIndex() 
+  * VIDDEC_GetExtensionIndex()
   *
-  * 
+  *
   *
   * @retval OMX_ErrorNone                    Successful operation.
-  *         OMX_ErrorBadParameter            Invalid operation.    
+  *         OMX_ErrorBadParameter            Invalid operation.
   *         OMX_ErrorIncorrectStateOperation If called when port is disabled.
   **/
 /*-------------------------------------------------------------------*/
@@ -3896,12 +3891,12 @@ EXIT:
 #ifdef KHRONOS_1_1
 /*-------------------------------------------------------------------*/
 /**
-  * ComponentRoleEnum() 
+  * ComponentRoleEnum()
   *
-  * 
+  *
   *
   * @retval OMX_ErrorNone                    Successful operation.
-  *         OMX_ErrorBadParameter            Invalid operation.    
+  *         OMX_ErrorBadParameter            Invalid operation.
   *         OMX_ErrorIncorrectStateOperation If called when port is disabled.
   **/
 /*-------------------------------------------------------------------*/
