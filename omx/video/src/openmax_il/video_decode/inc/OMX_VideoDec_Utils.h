@@ -620,6 +620,25 @@ typedef enum VIDDEC_BUFFER_TYPE
 		EncoderMetadataPointers		/*Used when buffer pointers come from Stagefright in camcorder usecase */
 	} VIDDEC_BUFFER_TYPE;
 
+
+#ifdef LG_FROYO_APPLY
+// chris-sdc +
+#define CMD_QUEUE_ARRAYSIZE                   100
+
+typedef struct VIDDEC_CMD_FLAGS{
+	OMX_COMMANDTYPE eCmd;
+	OMX_U32 nParam1;
+} VIDDEC_CMD_FLAGS;
+
+typedef struct VIDDEC_CMD_QUEUE {
+    VIDDEC_CMD_FLAGS pCmd[CMD_QUEUE_ARRAYSIZE];
+    OMX_U32 nTail;
+    OMX_U32 nHead;
+    OMX_U32 nCount;
+} VIDDEC_CMD_QUEUE;
+// chris-sdc -
+#endif
+
 typedef struct VIDDEC_PORT_TYPE
 {
     OMX_HANDLETYPE hTunnelComponent;
@@ -1045,6 +1064,14 @@ typedef struct VIDDEC_COMPONENT_PRIVATE
     OMX_BOOL bFlushing;
     /*to store last error severity*/
     OMX_S32 nLastErrorSeverity;
+
+#ifdef LG_FROYO_APPLY
+    // chris-sdc +
+    VIDDEC_CMD_QUEUE aCmdQueue;
+    OMX_BOOL bPortReConfig;
+    // chris-sdc -
+#endif
+
    /*to remember if OMX client uses cacheable buffers for output*/
    OMX_BOOL bCacheableOutputBuffers;
 
@@ -1060,8 +1087,8 @@ typedef struct VIDDEC_COMPONENT_PRIVATE
 	OMX_BOOL bUseIon;
 	OMX_BOOL bMapIonBuffers;
 	OMX_BOOL bUsePortReconfigForCrop;
-    OMX_BOOL bUseThumbnail;
-	OMX_U8 mmap_fd[6];
+        OMX_BOOL bUseThumbnail;
+        OMX_U8 mmap_fd[6];
 //#endif
     OMX_U8 *ion_handle[6];
     OMX_U8 *out_buff[6];
@@ -1382,6 +1409,16 @@ OMX_ERRORTYPE VIDDEC_CircBuf_Flush(VIDDEC_CIRCULAR_BUFFER* pCBuffer);
 OMX_ERRORTYPE VIDDEC_CircBuf_DeInit(VIDDEC_CIRCULAR_BUFFER* pCBuffer);
 OMX_ERRORTYPE VIDDEC_CircBuf_Add( VIDDEC_CIRCULAR_BUFFER* pCBuffer, OMX_BUFFERHEADERTYPE* pBufferHeader, OMX_MARKTYPE* pMark);
 OMX_ERRORTYPE VIDDEC_CircBuf_Remove( VIDDEC_CIRCULAR_BUFFER* pCBuffer, OMX_BUFFERHEADERTYPE* pBufferHeader, OMX_U32 nBytesconsumed, OMX_U32 ProcessMode);
+
+#ifdef LG_FROYO_APPLY
+// chris-sdc +
+OMX_ERRORTYPE VIDDEC_CmdQueue_Init(VIDDEC_CMD_QUEUE* pCmdQueue);
+OMX_ERRORTYPE VIDDEC_CmdQueue_DeInit(VIDDEC_CMD_QUEUE* pCmdQueue);
+OMX_ERRORTYPE VIDDEC_CmdQueue_Add( VIDDEC_CMD_QUEUE* pCmdQueue, OMX_COMMANDTYPE eCmd, OMX_U32 nParam1);
+OMX_ERRORTYPE VIDDEC_CmdQueue_Remove( VIDDEC_CMD_QUEUE* pCmdQueue);
+// chris-sdc -
+#endif
+
 OMX_U32 VIDDEC_GetBytesConsumed(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, OMX_BUFFERHEADERTYPE* pBufferHeader);
 #ifdef RESOURCE_MANAGER_ENABLED
 void VIDDEC_ResourceManagerCallback(RMPROXY_COMMANDDATATYPE cbData);

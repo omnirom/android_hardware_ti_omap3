@@ -45,4 +45,11 @@
 
 void* OMX_VidDec_Thread (void* pThreadData);
 void* OMX_VidDec_Return (void* pThreadData, OMX_U32 nPortId, OMX_BOOL bReturnOnlyOne);
+
+#ifdef LG_FROYO_APPLY
+// chris-sdc +
+OMX_ERRORTYPE OMX_VidDec_HandleCommand (VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, OMX_COMMANDTYPE eCmd, OMX_U32 nParam1); 
+// chris-sdc -
+#endif
+
 #endif

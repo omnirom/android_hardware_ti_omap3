@@ -186,6 +186,11 @@
     (_s_)->nVersion.s.nRevision = 0x1;          \
     (_s_)->nVersion.s.nStep = 0x0
 
+
+#ifdef LG_FROYO_APPLY
+unsigned long EOS_IpFlag;		//SB Added[ ] Patch mp3_issue
+#endif
+
 /* ======================================================================= */
 /** PV_OMXComponentCapabilityFlagsType: this communicates capabilities to opencore client
 * 
@@ -230,7 +235,12 @@ typedef enum OMX_INDEXAUDIOTYPE {
     OMX_IndexCustomMp3DecHeaderInfoConfig,
     OMX_IndexCustomMp3DecStreamInfoConfig,
     OMX_IndexCustomMp3DecDataPath,
-    OMX_IndexCustomDebug
+    OMX_IndexCustomDebug,
+
+   	//LGE_CHANGE_S[hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+    OMX_IndexCustomMP3DecFrameModeConfig // Tushar [] - OMAPS00238142 - MP3 decoder framemode index addition
+   	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+
 }OMX_INDEXAUDIOTYPE;
 /* ======================================================================= */
 /** MP3DEC_BUFDATA

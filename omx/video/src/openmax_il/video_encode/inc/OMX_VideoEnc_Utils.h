@@ -492,7 +492,7 @@ typedef enum VIDENC_CUSTOM_INDEX
     VideoEncodeCustomParamIndexSliceRefreshRowNumber,
     VideoEncodeCustomParamIndexSliceRefreshRowStartNumber,
     VideoEncodeCustomParamIndexIntraRefreshMethod,
-    VideoEncoderStoreMetadatInBuffers,
+	VideoEncoderStoreMetadatInBuffers,
     /* debug config */
     VideoEncodeCustomConfigIndexDebug
 } VIDENC_CUSTOM_INDEX;
@@ -565,7 +565,7 @@ typedef struct VIDEOENC_PORT_TYPE
 
     OMX_VIDEO_PARAM_BITRATETYPE* pBitRateType;
     VIDENC_BUFFER_PRIVATE* pBufferPrivate[VIDENC_MAX_NUM_OF_BUFFERS];
-    VIDENC_BUFFER_TYPE VIDEncBufferType;
+	VIDENC_BUFFER_TYPE VIDEncBufferType;
 } VIDEOENC_PORT_TYPE;
 
 #ifndef KHRONOS_1_2

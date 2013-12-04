@@ -1068,7 +1068,11 @@ static OMX_ERRORTYPE SetConfig (OMX_HANDLETYPE hComp,
     int flagValue=0;
     OMX_S16* deviceString = NULL;
     TI_OMX_DATAPATH dataPath;
-
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+	OMX_U32* pFrameMode = NULL; // Tushar [] - OMAPS00238142 - MP3 decoder framemode index addition
+	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
     MP3D_OMX_CONF_CHECK_CMD(pHandle,1,1) 
         pComponentPrivate = (MP3DEC_COMPONENT_PRIVATE *)pHandle->pComponentPrivate;
     MP3D_OMX_CONF_CHECK_CMD(pComponentPrivate,1,1) 
@@ -1214,6 +1218,22 @@ static OMX_ERRORTYPE SetConfig (OMX_HANDLETYPE hComp,
          OMX_DBG_SETCONFIG(pComponentPrivate->dbg, ComponentConfigStructure);
         break;
 
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+	// Tushar [ - OMAPS00238142 - MP3 decoder framemode index addition
+    case OMX_IndexCustomMP3DecFrameModeConfig:
+	    pFrameMode = (OMX_U32*)ComponentConfigStructure;
+        if (pFrameMode == NULL) {
+            OMX_ERROR4(pComponentPrivate->dbg, "%d :: Error from SetConfig() - OMX_ErrorBadParameter\n", __LINE__);
+            return OMX_ErrorBadParameter;
+        }
+        pComponentPrivate->frameMode = *pFrameMode;
+        OMXDBG_PRINT(stderr, PRINT, 2, 0, "pComponentPrivate->frameMode = %d\n", (int)pComponentPrivate->frameMode);
+        break;
+	// Tushar ] - OMAPS00238142 - MP3 decoder framemode index addition
+	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
+	
     default:
         eError = OMX_ErrorUnsupportedIndex;
         break;
@@ -1362,6 +1382,11 @@ static OMX_ERRORTYPE GetConfig (OMX_HANDLETYPE hComp,
 
     MP3DEC_COMPONENT_PRIVATE *pComponentPrivate;
     TI_OMX_STREAM_INFO *streamInfo;
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+	OMX_U32 nFrameMode; // Tushar [] - OMAPS00238142 - MP3 decoder framemode index addition
+	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
 
     pComponentPrivate = (MP3DEC_COMPONENT_PRIVATE *)(((OMX_COMPONENTTYPE*)hComp)->pComponentPrivate);
 
@@ -1381,6 +1406,16 @@ static OMX_ERRORTYPE GetConfig (OMX_HANDLETYPE hComp,
     } else if(nConfigIndex == OMX_IndexCustomDebug) {
       OMX_DBG_GETCONFIG(pComponentPrivate->dbg, ComponentConfigStructure);
     }
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+	// Tushar [ - OMAPS00238142 - MP3 decoder framemode index addition
+	else if (nConfigIndex == OMX_IndexCustomMP3DecFrameModeConfig) {
+		nFrameMode = pComponentPrivate->frameMode;
+		memcpy(ComponentConfigStructure, &nFrameMode, sizeof(OMX_U32));
+	}
+	// Tushar ] - OMAPS00238142 - MP3 decoder framemode index addition
+	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
     OMX_MEMFREE_STRUCT(streamInfo);
 
 EXIT:
@@ -2244,6 +2279,15 @@ static OMX_ERRORTYPE GetExtensionIndex(
     else if(!(strcmp(cParameterName,"OMX.TI.MP3.Decode.Debug"))){
         *pIndexType = OMX_IndexCustomDebug;
     }
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+	// Tushar [ - OMAPS00238142 - MP3 decoder framemode index addition
+	else if(!(strcmp(cParameterName,"OMX.TI.index.config.Mp3DecFrameModeInfo"))){
+		*pIndexType = OMX_IndexCustomMP3DecFrameModeConfig;
+	}
+	// Tushar] - OMAPS00238142 - MP3 decoder framemode index addition
+	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
     else {
         eError = OMX_ErrorBadParameter;
     }

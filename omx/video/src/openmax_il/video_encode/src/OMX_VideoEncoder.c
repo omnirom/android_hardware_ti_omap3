@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) Texas Instruments - http://www.ti.com/
  *
@@ -1818,7 +1817,7 @@ static OMX_ERRORTYPE SetParameter (OMX_IN OMX_HANDLETYPE hComponent,
     VIDEOENC_PORT_TYPE* pCompPortIn             = NULL;
     VIDEOENC_PORT_TYPE* pCompPortOut            = NULL;
 
-    OMX_VIDEO_STOREMETADATAINBUFFERSPARAMS* pStoreMetaData = (OMX_VIDEO_STOREMETADATAINBUFFERSPARAMS *) pCompParam;
+	OMX_VIDEO_STOREMETADATAINBUFFERSPARAMS* pStoreMetaData = (OMX_VIDEO_STOREMETADATAINBUFFERSPARAMS *) pCompParam;
 
 #ifdef __KHRONOS_CONF_1_1__
     OMX_PARAM_COMPONENTROLETYPE  *pRole = NULL;
@@ -2224,12 +2223,12 @@ static OMX_ERRORTYPE SetParameter (OMX_IN OMX_HANDLETYPE hComponent,
        //not supported yet
        case OMX_IndexConfigCommonRotate:
        break;
-       case VideoEncoderStoreMetadatInBuffers :    	   	
-    	   	if (pStoreMetaData->bStoreMetaData == OMX_TRUE)
-    	   	{
-				pComponentPrivate->pCompPort[pStoreMetaData->nPortIndex]->VIDEncBufferType = EncoderMetadataPointers;				
-    	   	}
-       break;
+        case VideoEncoderStoreMetadatInBuffers :
+           	if (pStoreMetaData->bStoreMetaData == OMX_TRUE)
+           	{
+                pComponentPrivate->pCompPort[pStoreMetaData->nPortIndex]->VIDEncBufferType = EncoderMetadataPointers;				
+           	}
+        break;
 
         default:
             eError = OMX_ErrorUnsupportedIndex;
@@ -2747,7 +2746,7 @@ static OMX_ERRORTYPE ExtensionIndex(OMX_IN OMX_HANDLETYPE hComponent,
         {"OMX.TI.VideoEncode.Config.MaxBytesPerSlice", VideoEncodeCustomParamIndexMaxBytesPerSlice},
         {"OMX.TI.VideoEncode.Config.SliceRefreshRowNumber", VideoEncodeCustomParamIndexSliceRefreshRowNumber},
         {"OMX.TI.VideoEncode.Config.SliceRefreshRowStartNumber", VideoEncodeCustomParamIndexSliceRefreshRowStartNumber},
-        {"OMX.google.android.index.storeMetaDataInBuffers",VideoEncoderStoreMetadatInBuffers},
+		{"OMX.google.android.index.storeMetaDataInBuffers",VideoEncoderStoreMetadatInBuffers},
         {"OMX.TI.VideoEncode.Debug", VideoEncodeCustomConfigIndexDebug}
     };
     OMX_ERRORTYPE eError = OMX_ErrorNone;
@@ -2885,7 +2884,7 @@ static OMX_ERRORTYPE EmptyThisBuffer (OMX_IN OMX_HANDLETYPE hComponent,
     VIDENC_BUFFER_PRIVATE* pBufferPrivate       = NULL;
     VIDENC_NODE* pMemoryListHead                = NULL;
     OMX_PARAM_PORTDEFINITIONTYPE* pPortDefIn    = NULL;
-    OMX_U32 FilledLen                           = 0;
+	OMX_U32 FilledLen                           = 0;
 
     OMX_CONF_CHECK_CMD(hComponent, ((OMX_COMPONENTTYPE *) hComponent)->pComponentPrivate, 1);
 
@@ -2938,6 +2937,7 @@ static OMX_ERRORTYPE EmptyThisBuffer (OMX_IN OMX_HANDLETYPE hComponent,
 	    pBufHead->nFilledLen = pBufHead->nAllocLen;
 	}
 
+
 #ifdef __PERF_INSTRUMENTATION__
     PERF_ReceivedFrame(pComponentPrivate->pPERF,
                        pBufHead->pBuffer,
@@ -2988,10 +2988,11 @@ static OMX_ERRORTYPE EmptyThisBuffer (OMX_IN OMX_HANDLETYPE hComponent,
     }
 #endif
 
-	if (pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
+    if (pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
 	{
 		    pBufHead->nFilledLen = FilledLen;
 	}
+
 OMX_CONF_CMD_BAIL:
     return eError;
 }
@@ -3387,10 +3388,10 @@ OMX_ERRORTYPE UseBuffer(OMX_IN OMX_HANDLETYPE hComponent,
 
     pComponentPrivate = (VIDENC_COMPONENT_PRIVATE*)(((OMX_COMPONENTTYPE*)hComponent)->pComponentPrivate);
 
-    if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType != EncoderMetadataPointers) && (nPortIndex == VIDENC_INPUT_PORT))
-    {
-    	OMX_DBG_CHECK_CMD(pComponentPrivate->dbg, ppBufferHdr, pBuffer, 1);
-    }
+	if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType != EncoderMetadataPointers) && (nPortIndex == VIDENC_INPUT_PORT))
+	{
+        OMX_DBG_CHECK_CMD(pComponentPrivate->dbg, ppBufferHdr, pBuffer, 1);
+	}
 
     if (pComponentPrivate->bInInvalidState != 0)
     {
@@ -3452,8 +3453,8 @@ OMX_ERRORTYPE UseBuffer(OMX_IN OMX_HANDLETYPE hComponent,
                   sizeof(OMX_BUFFERHEADERTYPE),
                   OMX_BUFFERHEADERTYPE, pMemoryListHead, pComponentPrivate->dbg);
 
-    if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
-    		&& (nPortIndex == VIDENC_INPUT_PORT))
+	if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
+            && (nPortIndex == VIDENC_INPUT_PORT))
     {
        VIDENC_MALLOC(pBufferPrivate->pBufferHdr->pBuffer ,
                           sizeof(video_metadata_t),
@@ -3738,10 +3739,10 @@ OMX_ERRORTYPE AllocateBuffer(OMX_IN OMX_HANDLETYPE hComponent,
     pComponentPrivate = (VIDENC_COMPONENT_PRIVATE*)(((OMX_COMPONENTTYPE*)hComponent)->pComponentPrivate);
     OMX_DBG_CHECK_CMD(pComponentPrivate->dbg, pBufHead, 1, 1);
 
-    if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers) &&
-    		(nPortIndex == VIDENC_INPUT_PORT))
+	if ((pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers) &&
+            (nPortIndex == VIDENC_INPUT_PORT))
     {
-    	return UseBuffer( hComponent, pBufHead, nPortIndex, pAppPrivate, nSizeBytes, NULL );
+        return UseBuffer( hComponent, pBufHead, nPortIndex, pAppPrivate, nSizeBytes, NULL );
     }
 
     if (pComponentPrivate->bInInvalidState != 0)

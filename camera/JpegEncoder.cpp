@@ -36,7 +36,7 @@
 #include <utils/Log.h>
 #include <OMX_JpegEnc_CustomCmd.h>
 
-#define PRINTF LOGD
+#define PRINTF ALOGD
 
 #define JPEG_ENCODER_DUMP_INPUT_AND_OUTPUT 0
 #define OPTIMIZE 1

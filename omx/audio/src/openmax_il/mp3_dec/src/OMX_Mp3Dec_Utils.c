@@ -341,6 +341,13 @@ OMX_ERRORTYPE MP3DEC_Fill_LCMLInitParams(OMX_HANDLETYPE pComponent,LCML_DSP *plc
 
 EXIT:
     OMX_PRINT1(pComponentPrivate->dbg, "Exiting MP3DEC_Fill_LCMLInitParams. error=%d\n", eError);
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch mp3_issue
+    EOS_IpFlag = 0;
+//SB Added] Patch mp3_issue.
+#endif
+
     return eError;
 }
 
@@ -720,7 +727,17 @@ OMX_U32 MP3DEC_HandleCommand (MP3DEC_COMPONENT_PRIVATE *pComponentPrivate)
                     if (eError != OMX_ErrorNone){
                         OMX_ERROR4(pComponentPrivate->dbg, "%d :: Error : InitMMCodec failed...>>>>>> \n",__LINE__);
                         /* send an event to client */
+
+#ifdef LG_FROYO_APPLY
+			//SB Added[ Patch 7928
+#if 0
+			eError = OMX_ErrorInvalidState;
+#endif
+			//SB Added] Patch 7928
+#else
                         eError = OMX_ErrorInvalidState;
+#endif
+
                         /* client should unload the component if the codec is not able to load */
                         pComponentPrivate->cbInfo.EventHandler (pHandle, 
                                                 pHandle->pApplicationPrivate,
@@ -1966,6 +1983,13 @@ OMX_ERRORTYPE MP3DEC_HandleDataBuf_FromApp(OMX_BUFFERHEADERTYPE* pBufHeader,
                 pComponentPrivate->bIsEOFSent = 1;
                 pComponentPrivate->SendAfterEOS = 1;
                 pBufHeader->nFlags = 0;
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch mp3_issue
+                EOS_IpFlag=1;
+//SB Added] Patch mp3_issue
+#endif
+
             }
 
             /* Store time stamp information */
@@ -2412,8 +2436,15 @@ OMX_ERRORTYPE MP3DEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                     pLcmlHdr->pBufHdr->hMarkTargetComponent = pComponentPrivate->hMarkTargetComponent;
                 }
                 pComponentPrivate->num_Reclaimed_Op_Buff++;
+                if (pLcmlHdr->pOpParam->ulIsLastBuffer
 
-                if (pLcmlHdr->pOpParam->ulIsLastBuffer){
+#ifdef LG_FROYO_APPLY
+					||
+					EOS_IpFlag	//SB Added[ ] Patch mp3_issue
+#endif
+
+					)
+					{ 		
                     OMX_PRBUFFER2(pComponentPrivate->dbg, "Adding EOS flag to the output buffer\n");
                     pLcmlHdr->pBufHdr->nFlags |= OMX_BUFFERFLAG_EOS;
                     pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
@@ -2423,6 +2454,11 @@ OMX_ERRORTYPE MP3DEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                                                            pLcmlHdr->pBufHdr->nFlags, NULL);
                     pComponentPrivate->bIsEOFSent = 0;
                     pLcmlHdr->pOpParam->ulIsLastBuffer=0;
+
+#ifdef LG_FROYO_APPLY
+                    EOS_IpFlag=0;	//SB Added[ ] Patch mp3_issue.
+#endif
+
                 }
 
                 if(pComponentPrivate->frameMode){
@@ -2568,6 +2604,19 @@ OMX_ERRORTYPE MP3DEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                 break;
             case USN_ERR_NONE:
             {
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch K
+                            pComponentPrivate->cbInfo.EventHandler(pHandle,
+                              pHandle->pApplicationPrivate,
+                              OMX_EventError,
+                              OMX_ErrorHardware,
+                              OMX_TI_ErrorSevere,
+                              NULL);
+                            OMX_ERROR4(pComponentPrivate->dbg, "%d SB GOT EMMCodecDspError calling MP3DEC_FatalErrorRecover \n",__LINE__);
+//SB Added] Patch K
+#endif
+
                 if( (args[5] == (void*)NULL)) {
                     OMX_ERROR4(pComponentPrivate->dbg, "%d :: UTIL: MMU_Fault \n",__LINE__);
                     MP3DEC_FatalErrorRecover(pComponentPrivate);

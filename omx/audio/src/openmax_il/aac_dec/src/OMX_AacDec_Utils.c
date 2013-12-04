@@ -2219,7 +2219,11 @@ OMX_ERRORTYPE AACDEC_HandleDataBuf_FromApp(OMX_BUFFERHEADERTYPE* pBufHeader,
                             OMX_PRBUFFER2(pComponentPrivate->dbg, "Calling LCML_QueueBuffer Line %d\n",__LINE__);
                             OMX_PRBUFFER2(pComponentPrivate->dbg, "input pBufHeader->nFilledLen = %ld\n\n", pBufHeader->nFilledLen);
                             eError = LCML_QueueBuffer(pLcmlHandle->pCodecinterfacehandle,
+#ifdef LG_FROYO_APPLY
+                                                      EMMCodecInputBufferMapBufLen, // Tushar[] - omaps00234054 - Need to map buffer allocation length instead of filled length for framemode/multiframemode to avoid DSP MMU fault observed when mapped buffer ends on the page boundary (i.e. mapped buffer address + filled length == Starting of the new page and only filled length is mapped to DSP).
+#else
                                                       EMMCodecInputBuffer,
+#endif
                                                       pBufHeader->pBuffer,
                                                       pBufHeader->nAllocLen,
                                                       pBufHeader->nFilledLen,
@@ -2819,6 +2823,27 @@ OMX_ERRORTYPE AACDEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                 AACDEC_HandleUSNError (pComponentPrivate, (OMX_U32)args[5]);
                 break;
             case USN_ERR_NONE:
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch K
+            {
+		pComponentPrivate->cbInfo.EventHandler(pHandle,
+                           pHandle->pApplicationPrivate,
+                           OMX_EventError,
+                           OMX_ErrorHardware,
+                           OMX_TI_ErrorSevere,
+                           NULL);
+                if( (args[5] == (void*)NULL)) {
+			OMX_ERROR4(pComponentPrivate->dbg, "%d SB GOT EMMCodecDspError calling AACDEC_FatalErrorRecover \n",__LINE__);
+//			if(pComponentPrivate!= NULL) //SB Added[ Patch Inc3.4
+			{	//SB Added[ Patch Inc3.4
+			   AACDEC_FatalErrorRecover(pComponentPrivate);			
+			}
+            	}
+                break;
+            }
+//SB Added] Patch K		 
+#else
             {
                 if( (args[5] == (void*)NULL)) {
                     OMX_ERROR4(pComponentPrivate->dbg, "%d :: UTIL: MMU_Fault \n",__LINE__);
@@ -2826,6 +2851,7 @@ OMX_ERRORTYPE AACDEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                 }
                 break;
             }
+#endif
             default:
                 break;
         }
@@ -2932,6 +2958,12 @@ OMX_ERRORTYPE AACDEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
         /* Cheking for MMU_fault */
         if((args[4] == (void*)USN_ERR_UNKNOWN_MSG) && (args[5] == (void*)NULL)) {
             OMX_ERROR4(pComponentPrivate->dbg, "%d :: UTIL: MMU_Fault \n",__LINE__);
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch Inc3.4
+AACDEC_FatalErrorRecover(pComponentPrivate);	//SB Added[ ] Patch Inc3.4
+//SB Added[ Patch Inc3.4
+#else
             pComponentPrivate->bIsInvalidState=OMX_TRUE;
             pComponentPrivate->curState = OMX_StateInvalid;
             pHandle = pComponentPrivate->pHandle;
@@ -2941,6 +2973,8 @@ OMX_ERRORTYPE AACDEC_LCML_Callback (TUsnCodecEvent event,void * args [10])
                                                    OMX_ErrorStreamCorrupt,
                                                    OMX_TI_ErrorSevere,
                                                    NULL);
+#endif
+
         }
     }
     else if (event ==EMMCodecInternalError){
@@ -3895,10 +3929,31 @@ void AACDEC_FatalErrorRecover(AACDEC_COMPONENT_PRIVATE *pComponentPrivate){
                                        OMX_ErrorInvalidState,
                                        OMX_TI_ErrorSevere,
                                        NULL);
+
+#ifdef LG_FROYO_APPLY
+//SB Added[ Patch 8273
+//	if(pComponentPrivate->DSPMMUFault == OMX_FALSE)
+//	{
+//SB Added] Patch 8273		
+//SB Added[ Patch 7859
+	AACDEC_CleanupInitParams(pComponentPrivate->pHandle);	//SB Added[ ] Patch 8273
+//	pComponentPrivate->DSPMMUFault = OMX_TRUE;
+//SB Added] Patch 7859
+//SB Added[ Patch Inc3.4
+ //	if(NULL != pComponentPrivate->pLcmlHandle){
+	        dlclose(pComponentPrivate->pLcmlHandle);
+	        pComponentPrivate->pLcmlHandle=NULL;
+//SB Added] Patch Inc3.4
+//	    }	
+	
+//	}	//SB Added[ ] Patch 8273
+#else
     if (pComponentPrivate->DSPMMUFault == OMX_FALSE){
         AACDEC_CleanupInitParams(pComponentPrivate->pHandle);
         pComponentPrivate->DSPMMUFault = OMX_TRUE;
     }
+#endif
+
     OMX_ERROR4(pComponentPrivate->dbg, "Completed FatalErrorRecover \
                \nEntering Invalid State\n");
 }

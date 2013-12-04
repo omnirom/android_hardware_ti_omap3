@@ -95,7 +95,12 @@ typedef enum OMX_INDEXAUDIOTYPE {
     OMX_IndexCustomMp3DecHeaderInfoConfig,
     OMX_IndexCustomMp3DecStreamInfoConfig,
     OMX_IndexCustomMp3DecDataPath,
-    OMX_IndexCustomDebug
+    OMX_IndexCustomDebug,
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+   	//LGE_CHANGE_S [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+    OMX_IndexCustomMP3DecFrameModeConfig // Tushar [] - OMAPS00238142 - MP3 decoder framemode index addition
+   	//LGE_CHANGE_E [hj.eum@lge.com]  2011_05_04, for using MP3 H/W codec in CMF
+//--]] GB Patch END
 }OMX_INDEXAUDIOTYPE;
 
 #endif /* OMX_MP3DECODER_H */

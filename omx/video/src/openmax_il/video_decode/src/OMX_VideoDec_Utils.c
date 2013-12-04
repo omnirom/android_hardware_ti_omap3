@@ -508,6 +508,72 @@ EXIT:
     return eError;
 }
 
+
+#ifdef LG_FROYO_APPLY
+//Upgrade to 9a ++
+// chris-sdc +
+OMX_ERRORTYPE VIDDEC_CmdQueue_Init(VIDDEC_CMD_QUEUE* pCmdQueue)
+{
+	OMX_ERRORTYPE eError = OMX_ErrorNone;
+
+	pCmdQueue->nCount = 0;
+	pCmdQueue->nHead = 0;
+	pCmdQueue->nTail = 0;
+EXIT:
+	 return eError;
+}
+
+OMX_ERRORTYPE VIDDEC_CmdQueue_DeInit(VIDDEC_CMD_QUEUE* pCmdQueue)
+{
+	OMX_ERRORTYPE eError = OMX_ErrorNone;
+
+	return eError;
+}
+
+OMX_ERRORTYPE VIDDEC_CmdQueue_Add( VIDDEC_CMD_QUEUE* pCmdQueue, OMX_COMMANDTYPE eCmd, OMX_U32 nParam1)
+{
+	OMX_ERRORTYPE eError = OMX_ErrorNone;
+	VIDDEC_CMD_FLAGS *pCmdFlags = NULL;
+
+	pCmdFlags = &pCmdQueue->pCmd[pCmdQueue->nHead];
+	pCmdFlags->eCmd = eCmd;
+	pCmdFlags->nParam1 = nParam1;
+
+	pCmdQueue->nHead++;
+	pCmdQueue->nCount++;
+	if(pCmdQueue->nHead >= CMD_QUEUE_ARRAYSIZE){
+		pCmdQueue->nHead = 0;
+	}
+
+EXIT:
+	return eError;
+}
+
+OMX_ERRORTYPE VIDDEC_CmdQueue_Remove( VIDDEC_CMD_QUEUE* pCmdQueue)
+{
+	OMX_ERRORTYPE eError = OMX_ErrorNone;
+	VIDDEC_CMD_FLAGS *pCmdFlags = NULL;
+
+	pCmdFlags = &pCmdQueue->pCmd[pCmdQueue->nTail];
+	pCmdFlags->eCmd = OMX_CommandMax;
+	pCmdFlags->nParam1 = 0;
+	
+	if (pCmdQueue->nCount > 0) {
+		pCmdQueue->nTail++;
+		if(pCmdQueue->nTail >= CMD_QUEUE_ARRAYSIZE){
+			pCmdQueue->nTail = 0;
+		}
+		pCmdQueue->nCount--;
+	}
+
+EXIT:
+	return eError;
+}
+// chris-sdc -
+//Upgrade to 9a --
+#endif
+
+
 /* ========================================================================== */
 /**
   *  VIDDEC_Load_Defaults() function will be called by the component to
@@ -775,6 +841,14 @@ OMX_ERRORTYPE VIDDEC_Load_Defaults (VIDDEC_COMPONENT_PRIVATE* pComponentPrivate,
             pComponentPrivate->bParserEnabled                   = OMX_TRUE;
 
             VIDDEC_CircBuf_Init(&pComponentPrivate->eStoreTimestamps);
+#ifdef LG_FROYO_APPLY
+//Upgrade to 9a ++
+            // chris-sdc +
+            VIDDEC_CmdQueue_Init(&pComponentPrivate->aCmdQueue);
+            pComponentPrivate->bPortReConfig = OMX_FALSE;
+            // chris-sdc -
+//Upgrade to 9a --
+#endif
             VIDDEC_PTHREAD_MUTEX_INIT(pComponentPrivate->sMutex);
             VIDDEC_PTHREAD_SEMAPHORE_INIT(pComponentPrivate->sInSemaphore);
             VIDDEC_PTHREAD_SEMAPHORE_INIT(pComponentPrivate->sOutSemaphore);
@@ -1425,6 +1499,22 @@ OMX_ERRORTYPE VIDDEC_DisablePort (VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, O
 
 EXIT:
     OMX_PRINT1(pComponentPrivate->dbg, "---EXITING(0x%x)\n",eError);
+
+#ifdef LG_FROYO_APPLY
+//Upgrade to 9a ++
+    // chris-sdc +
+    if(eError == OMX_ErrorNone)
+    {
+    	pComponentPrivate->bPortReConfig = OMX_TRUE;
+    }
+    else
+    {
+    	pComponentPrivate->bPortReConfig = OMX_FALSE;
+    }
+    // chris-sdc -
+//Upgrade to 9a --
+#endif
+
     return eError;
 }
 
@@ -1732,6 +1822,15 @@ EXIT:
         }
     }
     OMX_PRINT1(pComponentPrivate->dbg, "---EXITING(0x%x)\n",eError);
+
+#ifdef LG_FROYO_APPLY
+//Upgrade to 9a ++
+    // chris-sdc +
+    pComponentPrivate->bPortReConfig = OMX_FALSE;
+    // chris-sdc -
+//Upgrade to 9a --
+#endif
+
     return eError;
 }
 
@@ -4525,6 +4624,20 @@ OMX_ERRORTYPE VIDDEC_ParseHeader(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, OM
         else {
             nPadWidth = VIDDEC_MULTIPLE16 ( nWidth);
             nPadHeight = VIDDEC_MULTIPLE16 ( nHeight);
+
+#ifdef LG_FROYO_APPLY
+            // chris-sdc + 20101220 for Flash10 issue
+            if(nWidth == 864)
+            {
+                nWidth = 854;
+            }
+            if(nHeight == 864)
+            {
+                nHeight = 854;
+            }
+            // chris-sdc -
+#endif
+
         }
 
         /*TODO: Get minimum INPUT buffer size & verify if the actual size is enough*/
@@ -4618,7 +4731,13 @@ OMX_ERRORTYPE VIDDEC_ParseHeader(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, OM
                             pComponentPrivate->pOutPortDef->format.video.nFrameHeight *
                             ((pComponentPrivate->pOutPortFormat->eColorFormat == VIDDEC_COLORFORMAT420) ? VIDDEC_FACTORFORMAT420 : VIDDEC_FACTORFORMAT422);
 
+//--[[ GB Patch START : junghyun.you@lge.com [2012.05.31]
+#if 1 // tushar - OMAPS00242233
+        if(nOutPortActualAllocLen != nOutMinBufferSize || pComponentPrivate->pOutPortDef->nBufferSize != nOutMinBufferSize){
+#else // org			
         if(nOutPortActualAllocLen < nOutMinBufferSize || pComponentPrivate->pOutPortDef->nBufferSize < nOutMinBufferSize){
+#endif
+//--]] GB Patch END
             OMX_PRINT1(pComponentPrivate->dbg, " Previous: pOutPortDef->nBufferSize: %ld", pComponentPrivate->pOutPortDef->nBufferSize);
             pComponentPrivate->pOutPortDef->nBufferSize = nOutMinBufferSize;
             bOutPortSettingsChanged = OMX_TRUE;
@@ -6666,6 +6785,7 @@ OMX_ERRORTYPE VIDDEC_InitDSP_H264Dec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate
     OMX_PRINT3(pComponentPrivate->dbg, "Before Rounding: nFrameWidth = %ld, nFrameHeight = %ld \n", nFrameWidth, nFrameHeight);
     if (nFrameWidth & 0xF) nFrameWidth = (nFrameWidth & 0xFFF0) + 0x10;
     if (nFrameHeight & 0xF) nFrameHeight = (nFrameHeight & 0xFFF0) + 0x10;
+    if (nFrameWidth & 0xFF) nFrameWidth = VIDDEC_MULTIPLE32(nFrameWidth);
     OMX_PRINT3(pComponentPrivate->dbg, "After Rounding: nFrameWidth = %ld, nFrameHeight = %ld \n", nFrameWidth, nFrameHeight);
 
     pCreatePhaseArgs->unNumOfStreams            = 2;
@@ -6857,10 +6977,10 @@ OMX_ERRORTYPE VIDDEC_InitDSP_Mpeg4Dec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivat
     nFrameHeight = pComponentPrivate->pInPortDef->format.video.nFrameHeight;
     OMX_PRINT3(pComponentPrivate->dbg, "Before Rounding: nFrameWidth = %ld, nFrameHeight = %ld \n", nFrameWidth, nFrameHeight);
     if (nFrameWidth & 0xF) nFrameWidth = (nFrameWidth & 0xFFF0) + 0x10;
-    if (nFrameHeight & 0xF) nFrameHeight = (nFrameHeight & 0xFFF0) + 0x10;
+    if (nFrameHeight & 0xF) nFrameHeight = (nFrameHeight & 0xFFF0) + 0x10;    
     /* WA to avoid thumbnail crash for Mpeg4 PAL*/
     if (nFrameWidth & 0xFF) nFrameWidth = VIDDEC_MULTIPLE32(nFrameWidth);
-	OMX_PRINT3(pComponentPrivate->dbg, "After Rounding: nFrameWidth = %ld, nFrameHeight = %ld \n", nFrameWidth, nFrameHeight);
+    OMX_PRINT3(pComponentPrivate->dbg, "After Rounding: nFrameWidth = %ld, nFrameHeight = %ld \n", nFrameWidth, nFrameHeight);
 
     pCreatePhaseArgs->ulMaxWidth                = (OMX_U16)(nFrameWidth);
     pCreatePhaseArgs->ulMaxHeight               = (OMX_U16)(nFrameHeight);
@@ -7723,7 +7843,30 @@ OMX_ERRORTYPE VIDDEC_LCML_Callback (TUsnCodecEvent event,void * argsCb [10])
             if (pComponentPrivate->nLastErrorSeverity > OMX_TI_ErrorCritical) {
                 pComponentPrivate->nLastErrorSeverity = OMX_TI_ErrorCritical;
             }
+
+#ifdef LG_FROYO_APPLY
+//SB Added] Patch K	
+            pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
+                                         pComponentPrivate->pHandle->pApplicationPrivate,
+                                         OMX_EventError,
+                                         OMX_ErrorHardware,
+                                         OMX_TI_ErrorCritical,
+                                         "Error from the DSP");
+
+            OMX_PRDSP2(pComponentPrivate->dbg, "%d SB GOT EMMCodecDspError calling VIDDEC_FatalErrorRecover \n",__LINE__);
+            if(pComponentPrivate!= NULL)
+            {
+		VIDDEC_FatalErrorRecover(pComponentPrivate);			
+            }
+            else
+            {
+		OMX_PRDSP2(pComponentPrivate->dbg, "%d SB CATASTROPHIC BLUNDER HAS HAPPENED \n",__LINE__);
+            }
+//SB Added] Patch K			
+#else		
             pComponentPrivate->pHandle->SendCommand( pComponentPrivate->pHandle, OMX_CommandStateSet, -2, 0);
+#endif   
+
             goto EXIT;
         }
         if((int)argsCb[5] == IUALG_ERR_NOT_SUPPORTED)

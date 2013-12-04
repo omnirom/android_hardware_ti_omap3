@@ -107,6 +107,80 @@ extern int pselect(int  n, fd_set*  readfds, fd_set*  writefds, fd_set*  errfds,
 /** Default timeout used to come out of blocking calls*/
 #define VIDD_TIMEOUT (1000) /* milliseconds */
 
+
+#ifdef LG_FROYO_APPLY
+// chris-sdc +
+OMX_ERRORTYPE OMX_VidDec_HandleCommand (VIDDEC_COMPONENT_PRIVATE* pComponentPrivate, OMX_COMMANDTYPE eCmd, OMX_U32 nParam1)
+{
+    OMX_ERRORTYPE eError = OMX_ErrorNone;
+    OMX_PTR pCmdData;
+
+	if (eCmd == OMX_CommandStateSet) {
+		if ((OMX_S32)nParam1 < -2) {
+			OMX_ERROR2(pComponentPrivate->dbg, "Incorrect variable value used\n");
+		}
+		if ((OMX_S32)nParam1 != -1 && (OMX_S32)nParam1 != -2) {
+			eError = VIDDEC_HandleCommand(pComponentPrivate, nParam1);
+			if (eError != OMX_ErrorNone) {
+			 /* Do nothing
+			  */
+			}
+		}
+		else if ((OMX_S32)nParam1 == -1) {
+			eError = OMX_ErrorMax;
+		}
+		else if ((OMX_S32)nParam1 == -2) {
+			OMX_VidDec_Return (pComponentPrivate, OMX_ALL, OMX_FALSE);
+			VIDDEC_Handle_InvalidState( pComponentPrivate);
+			eError = OMX_ErrorMax;
+		}
+	} 
+	else if (eCmd == OMX_CommandPortDisable) {
+		eError = VIDDEC_DisablePort(pComponentPrivate, nParam1);
+		if (eError != OMX_ErrorNone) {
+			pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
+												   pComponentPrivate->pHandle->pApplicationPrivate,
+												   OMX_EventError,
+												   eError,
+												   OMX_TI_ErrorSevere,
+												   "Error in DisablePort function");
+		}
+	}
+	else if (eCmd == OMX_CommandPortEnable) {
+		eError = VIDDEC_EnablePort(pComponentPrivate, nParam1);
+		if (eError != OMX_ErrorNone) {
+			pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
+												   pComponentPrivate->pHandle->pApplicationPrivate,
+												   OMX_EventError,
+												   eError,
+												   OMX_TI_ErrorSevere,
+												   "Error in EnablePort function");
+		}
+	} else if (eCmd == OMX_CommandFlush) {
+		eError = VIDDEC_HandleCommandFlush (pComponentPrivate, nParam1, OMX_TRUE);
+		if (eError != OMX_ErrorNone) {
+			pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
+												   pComponentPrivate->pHandle->pApplicationPrivate,
+												   OMX_EventError,
+												   eError,
+												   OMX_TI_ErrorSevere,
+												   "Error in EnablePort function");
+		}
+	}
+	else if (eCmd == OMX_CommandMarkBuffer)    {
+		read(pComponentPrivate->cmdDataPipe[VIDDEC_PIPE_READ], &pCmdData, sizeof(pCmdData));
+		pComponentPrivate->arrCmdMarkBufIndex[pComponentPrivate->nInCmdMarkBufIndex].hMarkTargetComponent = ((OMX_MARKTYPE*)(pCmdData))->hMarkTargetComponent;
+		pComponentPrivate->arrCmdMarkBufIndex[pComponentPrivate->nInCmdMarkBufIndex].pMarkData = ((OMX_MARKTYPE*)(pCmdData))->pMarkData;
+		pComponentPrivate->nInCmdMarkBufIndex++;
+		pComponentPrivate->nInCmdMarkBufIndex %= VIDDEC_MAX_QUEUE_SIZE;
+	}
+
+	return eError;
+}
+// chris-sdc -
+#endif
+
+
 void* OMX_VidDec_Thread (void* pThreadData)
 {
     int status;
@@ -170,6 +244,29 @@ void* OMX_VidDec_Thread (void* pThreadData)
         status = pselect (fdmax+1, &rfds, NULL, NULL, NULL, &set);
         sigdelset (&set, SIGALRM);
         
+    
+#ifdef LG_FROYO_APPLY
+	// chris-sdc +
+	if(pComponentPrivate->aCmdQueue.nCount && !pComponentPrivate->bPortReConfig)
+	{
+		do {
+			VIDDEC_CMD_FLAGS *pCmdFlags = NULL;
+			
+			pCmdFlags = &pComponentPrivate->aCmdQueue.pCmd[pComponentPrivate->aCmdQueue.nTail];
+			eCmd = pCmdFlags->eCmd;
+			nParam1 = pCmdFlags->nParam1;
+			eError = OMX_VidDec_HandleCommand(pComponentPrivate, eCmd, nParam1);
+			VIDDEC_CmdQueue_Remove(&pComponentPrivate->aCmdQueue);
+		} while(pComponentPrivate->aCmdQueue.nCount && (eError == OMX_ErrorNone));
+		if(eError != OMX_ErrorNone)
+			VIDDEC_CmdQueue_Init(&pComponentPrivate->aCmdQueue);
+		
+		if(eError == OMX_ErrorMax)
+			break;
+	}
+	// chris-sdc -
+#endif    
+
         if (0 == status) {
             ;
         } 
@@ -201,6 +298,40 @@ void* OMX_VidDec_Thread (void* pThreadData)
                     PERF_ReceivedCommand(pComponentPrivate->pPERFcomp,
                                          eCmd, nParam1, PERF_ModuleLLMM);
 #endif
+
+
+#ifdef LG_FROYO_APPLY
+                    // chris-sdc +
+                    if(pComponentPrivate->bPortReConfig)
+                    {
+			if((eCmd == OMX_CommandStateSet) || (eCmd == OMX_CommandFlush))
+			{
+				VIDDEC_CmdQueue_Add(&pComponentPrivate->aCmdQueue, eCmd, nParam1);
+			}
+			else
+			{
+				eError = OMX_VidDec_HandleCommand(pComponentPrivate, eCmd, nParam1);
+				if(eError == OMX_ErrorMax)
+					break;
+			}
+                    }
+                    else
+                    {
+			eError = OMX_VidDec_HandleCommand(pComponentPrivate, eCmd, nParam1);
+			if(eError == OMX_ErrorMax)
+				break;
+                    }
+                    // chris-sdc -
+#endif
+
+
+
+#ifdef LG_FROYO_APPLY
+// chris-sdc + /* if 0 으로 주석처리함 */
+// chris-sdc -
+#else
+
+
                     if (eCmd == OMX_CommandStateSet) {
                         if ((OMX_S32)nParam1 < -2) {
                             OMX_ERROR2(pComponentPrivate->dbg, "Incorrect variable value used\n");
@@ -261,6 +392,9 @@ void* OMX_VidDec_Thread (void* pThreadData)
                         pComponentPrivate->nInCmdMarkBufIndex %= VIDDEC_MAX_QUEUE_SIZE;
 
                     }
+
+#endif
+
                     bFlag = OMX_FALSE;
                 }
             }

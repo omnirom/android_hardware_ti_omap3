@@ -2478,7 +2478,7 @@ OMX_ERRORTYPE OMX_VIDENC_Queue_H264_Buffer(VIDENC_COMPONENT_PRIVATE* pComponentP
     }
     else
     {
-        pUalgInpParams->H264VENC_TI_DYNAMICPARAMS.videncDynamicParams.captureWidth = 0;
+    pUalgInpParams->H264VENC_TI_DYNAMICPARAMS.videncDynamicParams.captureWidth = 0;
         pUalgInpParams->H264VENC_TI_DYNAMICPARAMS.videncDynamicParams.inputWidth = pPortDefIn->format.video.nFrameWidth;
     }
 
@@ -2612,42 +2612,42 @@ OMX_ERRORTYPE OMX_VIDENC_Queue_H264_Buffer(VIDENC_COMPONENT_PRIVATE* pComponentP
     OMX_PRBUFFER1(pComponentPrivate->dbg, " %p\n", (void*)pBufHead);
     pBufferPrivate->eBufferOwner = VIDENC_BUFFER_WITH_DSP;
     #ifdef TURN_ON_MAP_REUSE_INPUT
-    	if (pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
-    	{
-    		OMX_U32 *pTempBuffer;
-    		OMX_U32 nMetadataBufferType;
-    		OMX_PTR pBufferOrig;
+    if (pComponentPrivate->pCompPort[0]->VIDEncBufferType == EncoderMetadataPointers)
+    {
+   	    OMX_U32 *pTempBuffer;
+   	    OMX_U32 nMetadataBufferType;
+   	    OMX_PTR pBufferOrig;
 
-    		pTempBuffer = (OMX_U32 *) (pBufHead->pBuffer);
-    		nMetadataBufferType = *pTempBuffer;
+   	    pTempBuffer = (OMX_U32 *) (pBufHead->pBuffer);
+   	    nMetadataBufferType = *pTempBuffer;
 
-    		if(nMetadataBufferType == kMetadataBufferTypeCameraSource)
-    		{
-    			video_metadata_t* pVideoMetadataBuffer;
-    			pVideoMetadataBuffer = (video_metadata_t*) ((OMX_U32 *)(pBufHead->pBuffer));
-    			pBufferOrig = pVideoMetadataBuffer->handle;
-    			pBufHead->nOffset = pVideoMetadataBuffer->offset;
-    		}
-    	    eError = LCML_QueueBuffer(pLcmlHandle->pCodecinterfacehandle,
-    	                              EMMCodecInputBufferMapReuse,
-    	                              pBufferOrig,
-    	                              pBufHead->nAllocLen,
-    	                              pBufHead->nFilledLen,
-    	                              (OMX_U8*)pUalgInpParams,
-    	                              sizeof(H264VE_GPP_SN_UALGInputParams),
-    	                              (OMX_U8*)pBufHead);
-    	}
-    	else
-    	{
-    		eError = LCML_QueueBuffer(pLcmlHandle->pCodecinterfacehandle,
-    		    	                              EMMCodecInputBufferMapReuse,
-    		    	                              pBufHead->pBuffer,
-    		    	                              pBufHead->nAllocLen,
-    		    	                              pBufHead->nFilledLen,
-    		    	                              (OMX_U8*)pUalgInpParams,
-    		    	                              sizeof(H264VE_GPP_SN_UALGInputParams),
-    		    	                              (OMX_U8*)pBufHead);
-    	}
+        if(nMetadataBufferType == kMetadataBufferTypeCameraSource)
+        {
+            video_metadata_t* pVideoMetadataBuffer;
+            pVideoMetadataBuffer = (video_metadata_t*) ((OMX_U32 *)(pBufHead->pBuffer));
+            pBufferOrig = pVideoMetadataBuffer->handle;
+            pBufHead->nOffset = pVideoMetadataBuffer->offset;
+        }
+        eError = LCML_QueueBuffer(pLcmlHandle->pCodecinterfacehandle,
+                                  EMMCodecInputBufferMapReuse,
+                                  pBufferOrig,
+                                  pBufHead->nAllocLen,
+                                  pBufHead->nFilledLen,
+                                  (OMX_U8*)pUalgInpParams,
+                                  sizeof(H264VE_GPP_SN_UALGInputParams),
+                                  (OMX_U8*)pBufHead);
+    }
+    else
+    {
+        eError = LCML_QueueBuffer(pLcmlHandle->pCodecinterfacehandle,
+                                              EMMCodecInputBufferMapReuse,
+                                              pBufHead->pBuffer,
+                                              pBufHead->nAllocLen,
+                                              pBufHead->nFilledLen,
+                                              (OMX_U8*)pUalgInpParams,
+                                              sizeof(H264VE_GPP_SN_UALGInputParams),
+                                              (OMX_U8*)pBufHead);
+    }
 
 
     #else
@@ -2756,7 +2756,7 @@ OMX_ERRORTYPE OMX_VIDENC_Queue_Mpeg4_Buffer(VIDENC_COMPONENT_PRIVATE* pComponent
     }
     else
     {
-    	pUalgInpParams->ulcapturewidth = 0;
+    pUalgInpParams->ulcapturewidth      = 0;
     }
     pUalgInpParams->ulQpMax             = pComponentPrivate->nQpMax;
     pUalgInpParams->ulQpMin             = pComponentPrivate->nQpMin;
@@ -2993,6 +2993,36 @@ OMX_ERRORTYPE OMX_VIDENC_Process_FilledOutBuf(VIDENC_COMPONENT_PRIVATE* pCompone
             else
             {
                 pComponentPrivate->bWaitingForVOLHeaderBuffer = OMX_FALSE;
+
+#ifdef LG_FROYO_APPLY
+#ifndef MMS_RECORD_WA // chris-sdc + 20101228 MMS recording issue
+		if((176 == pPortDefOut->format.video.nFrameWidth) && (144 == pPortDefOut->format.video.nFrameHeight))
+		{
+			OMX_U8 *pBuf = pBufHead->pBuffer;
+			if((pBuf[0]==0x00) && (pBuf[1]==0x00) && (pBuf[2]==0x01) && (pBuf[3]==0xB0) &&
+				(pPortDefOut->format.video.eCompressionFormat == OMX_VIDEO_CodingMPEG4))
+			{
+				if(pBufHead->nFilledLen != 28)
+				{	
+					pBufHead->nFilledLen = 28;
+				}
+			}
+			else if((pBuf[0]==0x00) && (pBuf[1]==0x00) && (pBuf[2]==0x00) && (pBuf[3]==0x00) &&
+				(pPortDefOut->format.video.eCompressionFormat == OMX_VIDEO_CodingMPEG4)) 
+			{
+				OMX_U8 VOLHeader[28] = {0x00, 0x00, 0x01, 0xB0, 0x03, 0x00, 0x00, 0x01,
+										 0xB5, 0x09, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+										 0x01, 0x20, 0x00, 0x84, 0x5D, 0x4C, 0x28, 0x2C,
+										 0x20, 0x90, 0xA2, 0x1F};
+				if(pBufHead->nFilledLen == 28)
+				{
+					memcpy(pBuf, VOLHeader, pBufHead->nFilledLen);
+				}
+			}
+		}
+#endif // chris-sdc -
+#endif
+
             }
 
             pBufHead->nFlags |= OMX_BUFFERFLAG_ENDOFFRAME;
@@ -3627,7 +3657,7 @@ OMX_ERRORTYPE OMX_VIDENC_InitDSP_Mpeg4Enc(VIDENC_COMPONENT_PRIVATE* pComponentPr
     }
     else
     {
-        pCreatePhaseArgs->ulWidth = pPortDefIn->format.video.nFrameWidth;
+    pCreatePhaseArgs->ulWidth                 = pPortDefIn->format.video.nFrameWidth;
     }
     pCreatePhaseArgs->ulHeight                = pPortDefIn->format.video.nFrameHeight;
     pCreatePhaseArgs->ulTargetBitRate         = pPortDefOut->format.video.nBitrate;

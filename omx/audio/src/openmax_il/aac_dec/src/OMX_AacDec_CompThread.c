@@ -104,7 +104,7 @@ void* AACDEC_ComponentThread (void* pThreadData)
 #endif
     prctl(PR_SET_NAME, (unsigned long) "OMX-AACDEC", 0, 0, 0);
 
-    OMX_PRINT1(pComponentPrivate->dbg, "%d :: Entering ComponentThread \n",__LINE__);
+    //OMX_PRINT1(pComponentPrivate->dbg, "%d :: Entering ComponentThread \n",__LINE__);
 #ifdef __PERF_INSTRUMENTATION__
     pComponentPrivate->pPERFcomp = PERF_Create(PERF_FOURCC('A', 'C', 'D', '_'),
                                                PERF_ModuleComponent |
@@ -131,17 +131,17 @@ void* AACDEC_ComponentThread (void* pThreadData)
         status = pselect (fdmax+1, &rfds, NULL, NULL, &tv, &set);
 
         if (pComponentPrivate->bExitCompThrd == 1) {
-            OMX_ERROR4(pComponentPrivate->dbg, "%d :: Comp Thrd Exiting here...\n",__LINE__);
+            //OMX_ERROR4(pComponentPrivate->dbg, "%d :: Comp Thrd Exiting here...\n",__LINE__);
             goto EXIT;
         }
 
 
 
         if (0 == status) {
-            OMX_ERROR2(pComponentPrivate->dbg, "\n\n\n!!!!!  Component Time Out !!!!!!!!!!!! \n");
+            //OMX_ERROR2(pComponentPrivate->dbg, "\n\n\n!!!!!  Component Time Out !!!!!!!!!!!! \n");
         } 
         else if (-1 == status) {
-            OMX_ERROR4(pComponentPrivate->dbg, "%d :: Error in Select\n", __LINE__);
+            //OMX_ERROR4(pComponentPrivate->dbg, "%d :: Error in Select\n", __LINE__);
             pComponentPrivate->cbInfo.EventHandler (pHandle,
                                                     pHandle->pApplicationPrivate,
                                                     OMX_EventError,

@@ -402,9 +402,17 @@ OMX_ERRORTYPE OMX_ComponentInit (OMX_HANDLETYPE hComp)
 
     pPortDef_ip->nPortIndex                         = NBAMRENC_INPUT_PORT;
     pPortDef_ip->eDir                               = OMX_DirInput;
+
+#ifdef LG_FROYO_APPLY
+    pPortDef_ip->nBufferCountActual                 = 5; //NBAMRENC_NUM_INPUT_BUFFERS;
+    pPortDef_ip->nBufferCountMin                    = 5; //NBAMRENC_NUM_INPUT_BUFFERS;
+    pPortDef_ip->nBufferSize                        = NBAMRENC_INPUT_FRAME_SIZE;
+#else
     pPortDef_ip->nBufferCountActual                 = NBAMRENC_NUM_INPUT_BUFFERS;
     pPortDef_ip->nBufferCountMin                    = NBAMRENC_NUM_INPUT_BUFFERS;
     pPortDef_ip->nBufferSize                        = NBAMRENC_INPUT_FRAME_SIZE*NBAMRENC_MAX_NUM_OF_FRAMES;
+#endif
+
     pPortDef_ip->nBufferAlignment                   = DSP_CACHE_ALIGNMENT;
     pPortDef_ip->bEnabled                           = OMX_TRUE;
     pPortDef_ip->bPopulated                         = OMX_FALSE;
@@ -432,9 +440,16 @@ OMX_ERRORTYPE OMX_ComponentInit (OMX_HANDLETYPE hComp)
 
     pPortDef_op->nPortIndex                         = NBAMRENC_OUTPUT_PORT;
     pPortDef_op->eDir                               = OMX_DirOutput;
+
+#ifdef LG_FROYO_APPLY
+    pPortDef_op->nBufferCountMin                    = 9; //NBAMRENC_NUM_OUTPUT_BUFFERS;
+    pPortDef_op->nBufferCountActual                 = 9; //NBAMRENC_NUM_OUTPUT_BUFFERS;
+    pPortDef_op->nBufferSize                        = 320; //NBAMRENC_OUTPUT_FRAME_SIZE;
+#else
     pPortDef_op->nBufferCountMin                    = NBAMRENC_NUM_OUTPUT_BUFFERS;
     pPortDef_op->nBufferCountActual                 = NBAMRENC_NUM_OUTPUT_BUFFERS;
     pPortDef_op->nBufferSize                        = NBAMRENC_OUTPUT_FRAME_SIZE*NBAMRENC_MAX_NUM_OF_FRAMES;
+#endif
     pPortDef_ip->nBufferAlignment                   = DSP_CACHE_ALIGNMENT;
     pPortDef_op->bEnabled                           = OMX_TRUE;
     pPortDef_op->bPopulated                         = OMX_FALSE;
